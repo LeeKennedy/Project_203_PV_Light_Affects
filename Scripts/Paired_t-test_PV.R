@@ -19,14 +19,11 @@ data.in <- read_excel(paste("H:/GitHub Projects/Project_203_PV_Light_Affects/dat
                       sheet = "Sheet1", skip = 2)
 colnames(data.in)[4] <- "Without_Light"
 colnames(data.in)[5] <- "With_Light"
-
-# Inspect data -----------------------------------------------------------
-head(data.in)
 data.in <- data.in[,c(1:5)]
 data.in[,c(4,5)] <- sapply(data.in[,c(4,5)], as.numeric)
 
 # Create differences ----------------------------------------------------
-data.in$light_difference = data.in$With_Light - data.in$Without_Light
+data.in$light_difference = data.in$Without_Light - data.in$With_Light
 
 # Boxplot differences - looking for outliers ----------------------------
 boxplot(data.in$light_difference, 
@@ -34,23 +31,15 @@ boxplot(data.in$light_difference,
         ylab = "Result differences",
         col = "cornflowerblue")
 
-# Remove outlier ---------------------------------------------------------
-#data.in <- data.in %>%
-#  mutate(light_difference_2 = outliers(light_difference))
+# Remove outliers ---------------------------------------------------------
+data.in <- data.in %>%
+  filter(light_difference < 5)
 
-data.in$light_difference_2 <- data.in$light_difference
-
-boxplot(data.in$light_difference_2, 
-        main = "Boxplot of differences",
-        ylab = "Result differences",
-        col = "cornflowerblue")
-
-summary(data.in$light_difference_2)
-describe(data.in$light_difference_2)
+describe(data.in$light_difference)
 
 
 # Plot histogram with density curve --------------------------------------
-ggplot(data.in,aes(x=light_difference_2)) + 
+ggplot(data.in,aes(x=light_difference)) + 
         geom_histogram(aes(y=..density..),binwidth = 0.05) + 
         stat_function(fun = dnorm, 
                       colour = "blue",
@@ -61,6 +50,23 @@ ggplot(data.in,aes(x=light_difference_2)) +
 
 #Test if the weight differences are normally distributed -----------------
 shapiro.test(data.in$light_difference)
+
+# plot differences against concentration ---------------------------------
+
+diff_plot <- ggplot(data.in, aes(x=Without_Light, y = light_difference)) +
+  geom_point(size=4, shape=21, col="black", fill="cornflowerblue") +
+  geom_segment(aes(xend=Without_Light, yend=0)) +
+  geom_hline(yintercept=0) + 
+  labs(x="Peroxide Value",
+       y ="Effect of Light",
+       title = "Light effect on PV Result") +
+  theme_bw() +
+  theme(panel.grid.major = element_line(size = 0.5, color = "grey"), 
+        axis.line = element_line(size = 0.7, color = "black"), 
+        text = element_text(size = 14))
+  
+diff_plot
+
 
 # Perform a power analysis to check the sample size has adequate power----
 # to detect a difference if it exists-------------------------------------
@@ -107,6 +113,11 @@ plot2t <- ggplot(t_test_df, aes(row_n)) +
   geom_point(aes(y=ttest), size=4, shape=21, colour = "black", fill = "cornflowerblue") +
   geom_point(aes(y=TOST), size=4, shape=21, colour = "darkgreen", fill = "beige") +
   geom_hline(yintercept = 0.05, lty=2,col = "red") +
+  labs(title = "TOST Analysis v t-Test",
+       subtitle = "test",
+       x = "Trial",
+       y = "p-value",
+       caption = "test")+
   theme_bw() +
   theme(panel.grid.major = element_line(size = 0.5, color = "grey"), 
         axis.line = element_line(size = 0.7, color = "black"), 
