@@ -13,7 +13,7 @@ library(dts.quality)
 
 # Data in ----------------------------------------------------------------
 
-test <- "PVAL05"
+test <- "PVAL01"
 
 data.in <- read_excel(paste("H:/GitHub Projects/Project_203_PV_Light_Affects/data/",test," comparisons.xlsx", sep =""), 
                       sheet = "Sheet1", skip = 2)
@@ -23,7 +23,7 @@ data.in <- data.in[,c(1:5)]
 data.in[,c(4,5)] <- sapply(data.in[,c(4,5)], as.numeric)
 
 # Create differences ----------------------------------------------------
-data.in$light_difference = data.in$Without_Light - data.in$With_Light
+data.in$light_difference =  data.in$With_Light - data.in$Without_Light
 
 # Boxplot differences - looking for outliers ----------------------------
 boxplot(data.in$light_difference, 
@@ -33,14 +33,14 @@ boxplot(data.in$light_difference,
 
 # Remove outliers ---------------------------------------------------------
 data.in <- data.in %>%
-  filter(light_difference < 5)
+  filter(light_difference < 0.2)
 
 describe(data.in$light_difference)
 
 
 # Plot histogram with density curve --------------------------------------
 ggplot(data.in,aes(x=light_difference)) + 
-        geom_histogram(aes(y=..density..),binwidth = 0.05) + 
+        geom_histogram(aes(y=..density..),binwidth = 0.02) + 
         stat_function(fun = dnorm, 
                       colour = "blue",
                       args = list(mean = mean(data.in$light_difference), 
@@ -103,7 +103,7 @@ for (i in 1:(n-1)) {
   r1 <- t.test(data1$A, data1$B)
   t_test_df[i,1] = r1$p.value
   
-  r2 <- tost(data1$A, data1$B, 0.7)
+  r2 <- tost(data1$A, data1$B, 0.4)
   t_test_df[i,2] = r2$tost.p.value
 }
 
