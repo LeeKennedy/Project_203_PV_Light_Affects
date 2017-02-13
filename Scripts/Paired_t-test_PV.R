@@ -13,7 +13,7 @@ library(dts.quality)
 
 # Data in ----------------------------------------------------------------
 
-test <- "PVAL01"
+test <- "PVAL05"
 
 data.in <- read_excel(paste("H:/GitHub Projects/Project_203_PV_Light_Affects/data/",test," comparisons.xlsx", sep =""), 
                       sheet = "Sheet1", skip = 2)
@@ -33,14 +33,14 @@ boxplot(data.in$light_difference,
 
 # Remove outliers ---------------------------------------------------------
 data.in <- data.in %>%
-  filter(light_difference < 0.2)
+ filter(light_difference < 1)
 
 describe(data.in$light_difference)
 
 
 # Plot histogram with density curve --------------------------------------
 ggplot(data.in,aes(x=light_difference)) + 
-        geom_histogram(aes(y=..density..),binwidth = 0.02) + 
+        geom_histogram(aes(y=..density..),binwidth = 0.01) + 
         stat_function(fun = dnorm, 
                       colour = "blue",
                       args = list(mean = mean(data.in$light_difference), 
@@ -66,6 +66,7 @@ diff_plot <- ggplot(data.in, aes(x=Without_Light, y = light_difference)) +
         text = element_text(size = 14))
   
 diff_plot
+
 
 
 # Perform a power analysis to check the sample size has adequate power----
@@ -100,10 +101,10 @@ for (i in 1:(n-1)) {
   
   data1 <- data.in[1:(i+1),]
   
-  r1 <- t.test(data1$A, data1$B)
+  r1 <- t.test(data1$A, data1$B, paired = TRUE)
   t_test_df[i,1] = r1$p.value
   
-  r2 <- tost(data1$A, data1$B, 0.4)
+  r2 <- tost(data1$A, data1$B, 0.2, paired = TRUE)
   t_test_df[i,2] = r2$tost.p.value
 }
 
