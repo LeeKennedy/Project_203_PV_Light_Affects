@@ -1,0 +1,103 @@
+---
+title: "Exploring PV by TOST"
+output: html_notebook
+---
+
+A trial is being carried out to determine if performing the Peroxide Value test in the light affects the result.
+
+```{r, message=FALSE}
+library(readxl)
+library(dplyr)
+library(dts.quality)
+library(ggplot2)
+library(equivalence)
+
+```
+
+
+
+```{r, warning=FALSE}
+# Data in ----------------------------------------------------------------
+data.in <- read_excel("~/Documents/GitHub/Project_203_PV_Light_Affects/data/PVAL08 comparisons.xlsx", 
+    skip = 2)
+data.in <- data.in[,4:5]
+data.in <- sapply(data.in, as.numeric)
+data.in <- as.data.frame(data.in)
+colnames(data.in)[1] <- "A"  #Without_Light"
+colnames(data.in)[2] <- "B"  #With_Light"
+data.in <- na.omit(data.in)
+
+
+```
+
+```{r}
+ggplot(data.in, aes(x=A, y=B)) +
+  geom_point(size=4, shape = 21, col = "black", fill = "cornflowerblue") +
+  geom_abline(slope = 1, intercept = 0, lty=2, col = "red")+
+  labs(x="Subdued Light Result", y = "Normal Light Result", title = "PV Comparison") +
+  theme_bw() +
+  theme(panel.grid.major = element_line(size = 0.5, color = "grey"), 
+        axis.line = element_line(size = 0.7, color = "black"), 
+        text = element_text(size = 14))
+
+
+```
+
+
+```{r}
+# Create differences ----------------------------------------------------
+data.in$light.difference = data.in$B - data.in$A
+
+data.in
+
+# Remove a data point that is extreme.
+data.in2 <- data.in %>%
+  filter(light.difference <0.2)
+
+```
+
+
+
+```{r}
+# TOST -------------------------------------------------------------------
+
+t_test_df <- data.frame(
+        ttest = numeric(),
+        TOST = numeric()
+)
+
+n_pv <- nrow(data.in2)
+
+for (i in 1:n_pv) {
+
+data1 <- data.in2[1:(i+1),]
+
+r1 <- t.test(data1$A, data1$B, paired = TRUE)
+t_test_df[i,1] = r1$p.value
+
+Epsilon <- 0.5
+
+r2 <- tost(data1$A, data1$B, paired = TRUE,  Epsilon)
+t_test_df[i,2] = r2$tost.p.value
+}
+
+t_test_df$row_n <- as.numeric(rownames(t_test_df))
+
+```
+
+
+```{r}
+plot2t <- ggplot(t_test_df, aes(row_n)) +
+        geom_point(aes(y=ttest), size=4, shape=21, colour = "black", fill = "cornflowerblue") +
+        geom_point(aes(y=TOST), size=4, shape=21, colour = "darkgreen", fill = "beige") +
+        geom_hline(yintercept = 0.05, lty=2,col = "red")
+plot2t
+```
+
+
+```{r}
+r1
+r2
+```
+##Interpretation##
+The paired t-test result says that there is a difference between the two data sets (Ho = there is no difference, p = 0.0029) but the TOST test, using an Epsilon of `r Epsilon`, says that there isn't (Ho = there is a difference, p = 0.00015).

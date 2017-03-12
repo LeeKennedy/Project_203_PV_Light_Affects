@@ -13,17 +13,32 @@ library(dts.quality)
 
 # Data in ----------------------------------------------------------------
 
-test <- "PVAL05"
+test <- "PVAL02"
 
-data.in <- read_excel(paste("H:/GitHub Projects/Project_203_PV_Light_Affects/data/",test," comparisons.xlsx", sep =""), 
-                      sheet = "Sheet1", skip = 2)
+data.in <- read_excel(paste("~/Documents/GitHub/Project_203_PV_Light_Affects/data/",test," comparisons.xlsx", sep=""), 
+                      skip = 2)
 colnames(data.in)[4] <- "Without_Light"
 colnames(data.in)[5] <- "With_Light"
 data.in <- data.in[,c(1:5)]
 data.in[,c(4,5)] <- sapply(data.in[,c(4,5)], as.numeric)
 
+# Comparison Plot -------------------------------------------------------
+
+ggplot(data.in, aes(x=Without_Light, y=With_Light)) +
+  geom_point(size=4, shape = 21, col = "black", fill = "cornflowerblue") +
+  geom_abline(slope = 1, intercept = 0, lty=2, col = "red")+
+  labs(x="Subdued Light Result", y = "Normal Light Result", title = "PV Comparison") +
+  theme_bw() +
+  theme(panel.grid.major = element_line(size = 0.5, color = "grey"), 
+        axis.line = element_line(size = 0.7, color = "black"), 
+        text = element_text(size = 14))
+
+
+
 # Create differences ----------------------------------------------------
-data.in$light_difference = data.in$Without_Light - data.in$With_Light
+data.in$light_difference = data.in$With_Light - data.in$Without_Light
+
+data.in
 
 # Boxplot differences - looking for outliers ----------------------------
 boxplot(data.in$light_difference, 
@@ -33,23 +48,11 @@ boxplot(data.in$light_difference,
 
 # Remove outliers ---------------------------------------------------------
 data.in <- data.in %>%
-  filter(light_difference < 5)
+  filter(abs(light_difference) < 0.2)
 
 describe(data.in$light_difference)
 
 
-# Plot histogram with density curve --------------------------------------
-ggplot(data.in,aes(x=light_difference)) + 
-        geom_histogram(aes(y=..density..),binwidth = 0.05) + 
-        stat_function(fun = dnorm, 
-                      colour = "blue",
-                      args = list(mean = mean(data.in$light_difference), 
-                                  sd = sd(data.in$light_difference))) + 
-        scale_x_continuous(name="Result differences") + 
-        ggtitle("Histogram of result differences with and without light exposure")
-
-#Test if the weight differences are normally distributed -----------------
-shapiro.test(data.in$light_difference)
 
 # plot differences against concentration ---------------------------------
 
@@ -72,7 +75,7 @@ diff_plot
 # to detect a difference if it exists-------------------------------------
 # Can the test find a difference of 0.5sd (d)?---------------------------- 
 
-pwr.t.test(n=26,d=0.5,sig.level = 0.05,type = c("paired"))
+pwr.t.test(n=16,d=0.5,sig.level = 0.05,type = c("paired"))
 
 #Perform a paired t test -------------------------------------------------
 t.test(data.in$Without_Light,data.in$With_Light,paired = TRUE)
@@ -89,6 +92,8 @@ t_test_df <- data.frame(
   TOST = numeric()
 )
 
+Epsilon <- 0.3
+
 colnames(data.in)[4] <- "A"
 colnames(data.in)[5] <- "B"
 data.in[,c(4:5)] <- sapply(data.in[,c(4:5)], as.numeric)
@@ -103,7 +108,7 @@ for (i in 1:(n-1)) {
   r1 <- t.test(data1$A, data1$B)
   t_test_df[i,1] = r1$p.value
   
-  r2 <- tost(data1$A, data1$B, 0.7)
+  r2 <- tost(data1$A, data1$B, Epsilon)
   t_test_df[i,2] = r2$tost.p.value
 }
 
@@ -126,3 +131,4 @@ plot2t
 
 r1
 r2
+
