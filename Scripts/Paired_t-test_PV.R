@@ -36,9 +36,13 @@ ggplot(data.in, aes(x=Without_Light, y=With_Light)) +
 
 
 # Create differences ----------------------------------------------------
+<<<<<<< HEAD
 data.in$light_difference = data.in$With_Light - data.in$Without_Light
 
 data.in
+=======
+data.in$light_difference =  data.in$With_Light - data.in$Without_Light
+>>>>>>> origin/master
 
 # Boxplot differences - looking for outliers ----------------------------
 boxplot(data.in$light_difference, 
@@ -48,11 +52,30 @@ boxplot(data.in$light_difference,
 
 # Remove outliers ---------------------------------------------------------
 data.in <- data.in %>%
+<<<<<<< HEAD
   filter(abs(light_difference) < 0.2)
+=======
+ filter(light_difference < 1)
+>>>>>>> origin/master
 
 describe(data.in$light_difference)
 
 
+<<<<<<< HEAD
+=======
+# Plot histogram with density curve --------------------------------------
+ggplot(data.in,aes(x=light_difference)) + 
+        geom_histogram(aes(y=..density..),binwidth = 0.01) + 
+        stat_function(fun = dnorm, 
+                      colour = "blue",
+                      args = list(mean = mean(data.in$light_difference), 
+                                  sd = sd(data.in$light_difference))) + 
+        scale_x_continuous(name="Result differences") + 
+        ggtitle("Histogram of result differences with and without light exposure")
+
+#Test if the weight differences are normally distributed -----------------
+shapiro.test(data.in$light_difference)
+>>>>>>> origin/master
 
 # plot differences against concentration ---------------------------------
 
@@ -69,6 +92,7 @@ diff_plot <- ggplot(data.in, aes(x=Without_Light, y = light_difference)) +
         text = element_text(size = 14))
   
 diff_plot
+
 
 
 # Perform a power analysis to check the sample size has adequate power----
@@ -105,10 +129,14 @@ for (i in 1:(n-1)) {
   
   data1 <- data.in[1:(i+1),]
   
-  r1 <- t.test(data1$A, data1$B)
+  r1 <- t.test(data1$A, data1$B, paired = TRUE)
   t_test_df[i,1] = r1$p.value
   
+<<<<<<< HEAD
   r2 <- tost(data1$A, data1$B, Epsilon)
+=======
+  r2 <- tost(data1$A, data1$B, 0.2, paired = TRUE)
+>>>>>>> origin/master
   t_test_df[i,2] = r2$tost.p.value
 }
 
