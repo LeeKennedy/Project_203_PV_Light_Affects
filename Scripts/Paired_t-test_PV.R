@@ -13,10 +13,14 @@ library(dts.quality)
 
 # Data in ----------------------------------------------------------------
 
-test <- "PVAL05"
+test <- "PVAL08"
 
-data.in <- read_excel(paste("~/Documents/GitHub/Project_203_PV_Light_Affects/data/",test," comparisons.xlsx", sep=""), 
-                      skip = 2)
+#data.in <- read_excel(paste("~/Documents/GitHub/Project_203_PV_Light_Affects/data/",test," comparisons.xlsx", sep=""), 
+#                      skip = 2)
+
+data.in <- read_excel(paste("Y:/Validation and Verification of methods/Chemistry/Project 203 - Investigation of the PV Room Lighting/",test," comparisons.xlsx", sep=""), 
+                     skip = 2)
+
 colnames(data.in)[4] <- "Without_Light"
 colnames(data.in)[5] <- "With_Light"
 data.in <- data.in[,c(1:5)]
@@ -27,7 +31,7 @@ data.in[,c(4,5)] <- sapply(data.in[,c(4,5)], as.numeric)
 ggplot(data.in, aes(x=Without_Light, y=With_Light)) +
   geom_point(size=4, shape = 21, col = "black", fill = "cornflowerblue") +
   geom_abline(slope = 1, intercept = 0, lty=2, col = "red")+
-  labs(x="Subdued Light Result", y = "Normal Light Result", title = "PV Comparison") +
+  labs(x="Subdued Light Result", y = "Normal Light Result", title = "PV Comparison", subtitle = test) +
   theme_bw() +
   theme(panel.grid.major = element_line(size = 0.5, color = "grey"), 
         axis.line = element_line(size = 0.7, color = "black"), 
