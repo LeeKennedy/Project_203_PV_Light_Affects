@@ -13,7 +13,7 @@ library(dts.quality)
 
 # Data in ----------------------------------------------------------------
 
-test <- "PVAL08"
+test <- "PVAL06"
 
 #data.in <- read_excel(paste("~/Documents/GitHub/Project_203_PV_Light_Affects/data/",test," comparisons.xlsx", sep=""), 
 #                      skip = 2)
@@ -28,7 +28,9 @@ data.in[,c(4,5)] <- sapply(data.in[,c(4,5)], as.numeric)
 
 # Comparison Plot -------------------------------------------------------
 
-ggplot(data.in, aes(x=Without_Light, y=With_Light)) +
+data.in <- data.in %>% filter(Without_Light <25)
+
+pv_plot <- ggplot(data.in, aes(x=Without_Light, y=With_Light)) +
   geom_point(size=4, shape = 21, col = "black", fill = "cornflowerblue") +
   geom_abline(slope = 1, intercept = 0, lty=2, col = "red")+
   labs(x="Subdued Light Result", y = "Normal Light Result", title = "PV Comparison", subtitle = test) +
@@ -36,7 +38,7 @@ ggplot(data.in, aes(x=Without_Light, y=With_Light)) +
   theme(panel.grid.major = element_line(size = 0.5, color = "grey"), 
         axis.line = element_line(size = 0.7, color = "black"), 
         text = element_text(size = 14))
-
+pv_plot
 
 
 # Create differences ----------------------------------------------------
@@ -56,7 +58,7 @@ boxplot(data.in$light_difference,
 # Remove outliers ---------------------------------------------------------
 data.in <- data.in %>%
 
-  filter(abs(light_difference) < 0.2)
+  filter(abs(light_difference) < 2)
 
 
 describe(data.in$light_difference)
